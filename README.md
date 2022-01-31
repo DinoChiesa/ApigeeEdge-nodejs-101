@@ -1,3 +1,7 @@
+# ouT OF DaTe
+
+As of January 2022, this repo is out of date. It shows how to use hosted targets within Apigee, a feature which is now deprecated. If you want to run nodejs apps or services, consider using AppEngine or Cloud Run.
+
 # Example Nodejs API Proxy
 
 This is an example API Proxy for Apigee Edge that uses nodejs.
