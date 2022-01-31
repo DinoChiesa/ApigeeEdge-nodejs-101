@@ -4,7 +4,7 @@
 // ------------------------------------------------------------------
 // import and deploy an Apigee Edge proxy bundle or shared flow.
 //
-// Copyright 2017 Google Inc.
+// Copyright 2017-2018 Google LLC.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,23 +18,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// last saved: <2017-December-13 16:55:52>
+// last saved: <2018-August-02 13:29:17>
 
-var edgejs = require('apigee-edge-js'),
-    common = edgejs.utility,
-    apigeeEdge = edgejs.edge,
-    sprintf = require('sprintf-js').sprintf,
-    Getopt = require('node-getopt'),
-    version = '20171206-1242',
-    defaults = { basepath : '/' },
-    getopt = new Getopt(common.commonOptions.concat([
-      ['d' , 'source=ARG', 'source directory for the proxy files. Should be parent of dir "apiproxy" or "sharedflowbundle"'],
-      ['N' , 'name=ARG', 'override the name for the API proxy or shared flow. By default it\'s extracted from the XML file.'],
-      ['e' , 'env=ARG', 'the Edge environment(s) to which to deploy the asset. Separate multiple environments with a comma.'],
-      ['b' , 'basepath=ARG', 'basepath for deploying the API Proxy. Default: ' + defaults.basepath + '  Does not apply to sf.'],
-      ['S' , 'sharedflow', 'import and deploy as a sharedflow. Default: import + deploy a proxy.'],
-      ['T' , 'notoken', 'optional. do not try to get a authentication token.']
-    ])).bindHelp();
+const edgejs     = require('apigee-edge-js'),
+      common     = edgejs.utility,
+      apigeeEdge = edgejs.edge,
+      sprintf    = require('sprintf-js').sprintf,
+      Getopt     = require('node-getopt'),
+      version    = '20180531-1645',
+      defaults   = { basepath : '/' },
+      getopt     = new Getopt(common.commonOptions.concat([
+        ['d' , 'source=ARG', 'source directory for the proxy files. Should be parent of dir "apiproxy" or "sharedflowbundle"'],
+        ['N' , 'name=ARG', 'override the name for the API proxy or shared flow. By default it\'s extracted from the XML file.'],
+        ['e' , 'env=ARG', 'the Edge environment(s) to which to deploy the asset. Separate multiple environments with a comma.'],
+        ['b' , 'basepath=ARG', 'basepath for deploying the API Proxy. Default: ' + defaults.basepath + '  Does not apply to sf.'],
+        ['S' , 'sharedflow', 'import and deploy as a sharedflow. Default: import + deploy a proxy.']
+      ])).bindHelp();
 
 // ========================================================
 
@@ -97,7 +96,7 @@ apigeeEdge.connect(options, function(e, org){
   var collection = (opt.options.sharedflow) ? org.sharedflows : org.proxies;
   var term = (opt.options.sharedflow) ? 'sharedflow' : 'proxy';
 
-  common.logWrite('importing');
+  common.logWrite('importing a %s', term);
   collection.import({name:opt.options.name, source:opt.options.source}, function(e, result) {
     if (e) {
       common.logWrite('error: ' + JSON.stringify(e, null, 2));
@@ -106,7 +105,8 @@ apigeeEdge.connect(options, function(e, org){
       process.exit(1);
     }
     common.logWrite(sprintf('import ok. %s name: %s r%d', term, result.name, result.revision));
-    if (opt.options.env) {
+    var env = opt.options.env || process.env.ENV;
+    if (env) {
       // env may be a comma-separated list
       var options = {
             name: result.name,
@@ -125,7 +125,7 @@ apigeeEdge.connect(options, function(e, org){
             .catch(console.error);
           };
       let results = [];
-      var p = opt.options.env.split(',')
+      var p = env.split(',')
         .reduce(reducer, Promise.resolve())
         .then(() => { common.logWrite('all done...'); })
         .catch(console.error);
